@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoCare Garage - Service Booking</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>AutoCare Garage</h1>
+        <p>Online Vehicle Service Booking & Cost Estimation</p>
+    </header>
+
+    <main class="container">
+        <!-- Booking Form Section -->
+        <section id="booking-section" class="card">
+            <h2>Book a Service</h2>
+            <form id="serviceForm" novalidate>
+                
+                <!-- Customer Details -->
+                <fieldset>
+                    <legend>Customer Information</legend>
+                    <div class="form-group">
+                        <label for="customerName">Full Name *</label>
+                        <input type="text" id="customerName" name="customerName" placeholder="e.g., Jane Wanjiku">
+                        <span class="error-msg" id="nameError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number (10 digits) *</label>
+                        <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="e.g., 0712345678">
+                        <span class="error-msg" id="phoneError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" placeholder="e.g., jane@example.com">
+                        <span class="error-msg" id="emailError"></span>
+                    </div>
+                </fieldset>
+
+                <!-- Vehicle Details -->
+                <fieldset>
+                    <legend>Vehicle Information</legend>
+                    <div class="form-group">
+                        <label for="regNumber">Registration Number *</label>
+                        <input type="text" id="regNumber" name="regNumber" placeholder="e.g., KDA 123A">
+                        <span class="error-msg" id="regError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vehicleType">Vehicle Type</label>
+                        <select id="vehicleType" name="vehicleType">
+                            <option value="">-- Select Type --</option>
+                            <option value="Saloon Car">Saloon Car</option>
+                            <option value="SUV">SUV</option>
+                            <option value="Pickup">Pickup</option>
+                            <option value="Van">Van</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vehicleModel">Vehicle Model</label>
+                        <input type="text" id="vehicleModel" name="vehicleModel" placeholder="e.g., Toyota Axio">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="manufactureYear">Year of Manufacture *</label>
+                        <input type="number" id="manufactureYear" name="manufactureYear" placeholder="e.g., 2018">
+                        <span class="error-msg" id="yearError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="serviceDate">Preferred Service Date *</label>
+                        <input type="date" id="serviceDate" name="serviceDate">
+                        <span class="error-msg" id="dateError"></span>
+                    </div>
+                </fieldset>
+
+                <!-- Services Selection -->
+                <fieldset>
+                    <legend>Select Required Services *</legend>
+                    <div class="services-grid">
+                        <label><input type="checkbox" class="service-checkbox" value="3000" data-name="Engine Oil Change"> Engine Oil Change (KSh 3,000)</label>
+                        <label><input type="checkbox" class="service-checkbox" value="2000" data-name="Brake Inspection"> Brake Inspection (KSh 2,000)</label>
+                        <label><input type="checkbox" class="service-checkbox" value="2500" data-name="Wheel Alignment"> Wheel Alignment (KSh 2,500)</label>
+                        <label><input type="checkbox" class="service-checkbox" value="3500" data-name="Computer Diagnosis"> Computer Diagnosis (KSh 3,500)</label>
+                        <label><input type="checkbox" class="service-checkbox" value="8000" data-name="Full Service"> Full Service (KSh 8,000)</label>
+                    </div>
+                    <span class="error-msg" id="serviceError"></span>
+                </fieldset>
+
+                <!-- Dynamic Cost Display -->
+                <div class="cost-display">
+                    <h3>Estimated Total: KSh <span id="totalCost">0</span></h3>
+                    <p id="individualisationNote" class="note"></p>
+                </div>
+
+                <button type="submit" id="submitBtn">Submit Booking Request</button>
+            </form>
+        </section>
+
+        <!-- Confirmation / Receipt Section (Hidden initially) -->
+        <section id="receipt-section" class="card hidden">
+            <h2 class="success-title">SERVICE REQUEST RECEIVED</h2>
+            <div class="receipt-content">
+                <p><strong>Customer:</strong> <span id="receiptName"></span></p>
+                <p><strong>Vehicle:</strong> <span id="receiptReg"></span> (<span id="receiptType"></span>)</p>
+                <p><strong>Service Date:</strong> <span id="receiptDate"></span></p>
+                
+                <h4>Selected Services:</h4>
+                <ul id="receiptServicesList"></ul>
+                
+                <h3 class="receipt-total">ESTIMATED SERVICE COST: KSh <span id="receiptTotal"></span></h3>
+            </div>
+            <button onclick="resetApp()">Book Another Service</button>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
+/* --- Global Styles --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f4f7f6;
+    color: #333;
+    line-height: 1.6;
+    padding-bottom: 50px;
+}
+
+header {
+    background-color: #2c3e50;
+    color: #fff;
+    text-align: center;
+    padding: 2rem 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.card {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* --- Form Styles --- */
+fieldset {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+legend {
+    font-weight: bold;
+    color: #2c3e50;
+    padding: 0 10px;
+    font-size: 1.1rem;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+}
+
+.form-group input, 
+.form-group select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus, 
+.form-group select:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.error-msg {
+    color: #e74c3c;
+    font-size: 0.85rem;
+    margin-top: 0.3rem;
+    min-height: 18px;
+}
+
+/* --- Services Checkbox Grid --- */
+.services-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.services-grid label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.services-grid label:hover {
+    background: #eef2f5;
+}
+
+.service-checkbox {
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
+/* --- Cost Display --- */
+.cost-display {
+    background: #e8f4f8;
+    padding: 1.5rem;
+    border-radius: 6px;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    border-left: 5px solid #3498db;
+}
+
+.cost-display h3 {
+    font-size: 1.8rem;
+    color: #2c3e50;
+}
+
+.note {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    margin-top: 5px;
+}
+
+/* --- Buttons --- */
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background-color: #219150;
+}
+
+/* --- Receipt Section --- */
+.success-title {
+    color: #27ae60;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #27ae60;
+    padding-bottom: 10px;
+}
+
+.receipt-content p {
+    margin-bottom: 0.8rem;
+    font-size: 1.05rem;
+}
+
+.receipt-content h4 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+#receiptServicesList {
+    list-style-type: disc;
+    padding-left: 20px;
+    margin-bottom: 1.5rem;
+    color: #555;
+}
+
+.receipt-total {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 4px;
+    text-align: right;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 600px) {
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+    .card {
+        padding: 1rem;
+    }
+    .cost-display h3 {
+        font-size: 1.5rem;
+    }
+}
+// --- Configuration for Individualisation Requirement ---
+// IMPORTANT: Change this based on your admission number's last digit.
+// Options: 0: 10% Discount (3+ services), 1: Car wash (+1000), 2: Engine diag (+2500)
+// 3: 5% Discount (> 10000), 4: Tyre balancing (+2000), 5: Pickup/delivery (+1500)
+// 6: Free diag (Full Service), 7: Air-con (+3000), 8: Older than 15 yrs (+1000), 9: Battery (+1200)
+const MY_LAST_DIGIT = 4; 
+
+document.addEventListener('DOMContentLoaded', () => {
+    // --- DOM Elements ---
+    const form = document.getElementById('serviceForm');
+    const serviceCheckboxes = document.querySelectorAll('.service-checkbox');
+    const totalCostSpan = document.getElementById('totalCost');
+    const noteP = document.getElementById('individualisationNote');
+    
+    // Input fields for validation
+    const nameInput = document.getElementById('customerName');
+    const phoneInput = document.getElementById('phoneNumber');
+    const emailInput = document.getElementById('email');
+    const regInput = document.getElementById('regNumber');
+    const yearInput = document.getElementById('manufactureYear');
+    const dateInput = document.getElementById('serviceDate');
+
+    // Error message spans
+    const nameError = document.getElementById('nameError');
+    const phoneError = document.getElementById('phoneError');
+    const emailError = document.getElementById('emailError');
+    const regError = document.getElementById('regError');
+    const yearError = document.getElementById('yearError');
+    const dateError = document.getElementById('dateError');
+    const serviceError = document.getElementById('serviceError');
+
+    // --- Dynamic Behavior (Task 3) ---
+    // 1. Update cost when services change
+    serviceCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', calculateServiceCost);
+    });
+
+    // 2. Warning for older vehicles (Dynamic behavior)
+    yearInput.addEventListener('input', checkVehicleAge);
+
+    // --- Functions (Task 5) ---
+
+    // Function 1: Validate Form
+    function validateServiceForm() {
+        let isValid = true;
+        clearErrors();
+
+        // 1. Name validation
+        if (nameInput.value.trim() === '') {
+            nameError.textContent = 'Customer name is required.';
+            isValid = false;
+        }
+
+        // 2. Phone validation (Exactly 10 digits)
+        const phoneRegex = /^\d{10}$/;
+        if (!phoneRegex.test(phoneInput.value.trim())) {
+            phoneError.textContent = 'Phone number must be exactly 10 digits.';
+            isValid = false;
+        }
+
+        // 3. Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailInput.value.trim())) {
+            emailError.textContent = 'Please enter a valid email address.';
+            isValid = false;
+        }
+
+        // 4. Registration validation
+        if (regInput.value.trim() === '') {
+            regError.textContent = 'Vehicle registration number is required.';
+            isValid = false;
+        }
+
+        // 5. Year of manufacture validation (Reasonable: between 1900 and current year)
+        const currentYear = new Date().getFullYear();
+        const year = parseInt(yearInput.value);
+        if (isNaN(year) || year < 1900 || year > currentYear) {
+            yearError.textContent = `Enter a valid year between 1900 and ${currentYear}.`;
+            isValid = false;
+        }
+
+        // 6. Service Date validation
+        if (dateInput.value === '') {
+            dateError.textContent = 'Please select a preferred service date.';
+            isValid = false;
+        }
+
+        // 7. At least one service selected
+        const selectedServices = getSelectedServices();
+        if (selectedServices.length === 0) {
+            serviceError.textContent = 'Please select at least one service.';
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    // Function 2: Calculate Service Cost
+    function calculateServiceCost() {
+        let baseTotal = 0;
+        const selectedServices = getSelectedServices();
+
+        // Calculate base cost
+        selectedServices.forEach(service => {
+            baseTotal += parseInt(service.value);
+        });
+
+        let finalTotal = baseTotal;
+        let noteText = "";
+
+        // --- Apply Individualization Requirement ---
+        switch(MY_LAST_DIGIT) {
+            case 0: // 10% discount when 3 or more services selected
+                if (selectedServices.length >= 3) {
+                    finalTotal = baseTotal * 0.90;
+                    noteText = "10% discount applied for 3+ services.";
+                }
+                break;
+            case 1: // Add car-wash 1,000
+                if(selectedServices.length > 0) { finalTotal += 1000; noteText = "Includes Car Wash (KSh 1,000)."; }
+                break;
+            case 2: // Add engine diag 2,500
+                if(selectedServices.length > 0) { finalTotal += 2500; noteText = "Includes Engine Diagnostic (KSh 2,500)."; }
+                break;
+            case 3: // 5% discount if over 10,000
+                if (baseTotal > 10000) {
+                    finalTotal = baseTotal * 0.95;
+                    noteText = "5% discount applied for total over KSh 10,000.";
+                }
+                break;
+            case 4: // Add tyre balancing 2,000
+                if(selectedServices.length > 0) { 
+                    finalTotal += 2000; 
+                    noteText = "Includes Tyre Balancing (KSh 2,000)."; 
+                }
+                break;
+            case 5: // Add pickup/delivery 1,500
+                if(selectedServices.length > 0) { finalTotal += 1500; noteText = "Includes Pickup & Delivery (KSh 1,500)."; }
+                break;
+            case 6: // Free computer diagnosis if Full Service selected
+                // Note: The base cost already includes Computer Diagnosis if they checked it.
+                // This logic assumes "Free" means if Full Service is checked, don't charge for the separate Diag check.
+                // For simplicity, we'll just add a note. A more robust implementation would subtract it.
+                const hasFullService = Array.from(selectedServices).some(s => s.dataset.name === 'Full Service');
+                if(hasFullService) { noteText = "Free Computer Diagnosis included with Full Service."; }
+                break;
+            case 7: // Add air-con 3,000
+                if(selectedServices.length > 0) { finalTotal += 3000; noteText = "Includes Air-Conditioning Service (KSh 3,000)."; }
+                break;
+            case 8: // Additional 1,000 charge for vehicles older than 15 years
+                const year = parseInt(yearInput.value);
+                const currentYear = new Date().getFullYear();
+                if (!isNaN(year) && (currentYear - year) > 15) {
+                    finalTotal += 1000;
+                    noteText = "Additional KSh 1,000 charge for vehicles older than 15 years.";
+                }
+                break;
+            case 9: // Add battery inspection 1,200
+                if(selectedServices.length > 0) { finalTotal += 1200; noteText = "Includes Battery Inspection (KSh 1,200)."; }
+                break;
+        }
+
+        // Update UI
+        totalCostSpan.textContent = finalTotal.toLocaleString();
+        noteP.textContent = noteText;
+        
+        // Clear service error if at least one is selected
+        if (selectedServices.length > 0) {
+            serviceError.textContent = '';
+        }
+    }
+
+    // Function 3: Check Vehicle Age (Dynamic Behavior)
+    function checkVehicleAge() {
+        const year = parseInt(yearInput.value);
+        const currentYear = new Date().getFullYear();
+        
+        if (!isNaN(year) && year > 1900 && year <= currentYear) {
+            const age = currentYear - year;
+            if (age > 15) {
+                yearError.textContent = `Note: Vehicle is ${age} years old. Extra charges may apply.`;
+                yearError.style.color = '#e67e22'; // Orange warning color
+            } else {
+                yearError.textContent = '';
+            }
+        } else {
+             yearError.textContent = ''; // Clear if invalid, handled by validation
+        }
+        
+        // Recalculate cost because age might affect it (Rule 8)
+        calculateServiceCost();
+    }
+
+    // Helper: Get selected services
+    function getSelectedServices() {
+        return Array.from(serviceCheckboxes).filter(cb => cb.checked);
+    }
+
+    // Helper: Clear errors
+    function clearErrors() {
+        nameError.textContent = '';
+        phoneError.textContent = '';
+        emailError.textContent = '';
+        regError.textContent = '';
+        yearError.textContent = ''; // This clears the warning too, handled on input
+        yearError.style.color = '#e74c3c'; // Reset color
+        dateError.textContent = '';
+        serviceError.textContent = '';
+    }
+
+    // --- Form Submission (Task 8: Practical Demonstration) ---
+    form.addEventListener('submit', (e) => {
+        e.preventDefault(); // Prevent default page reload
+
+        // Validate form
+        if (!validateServiceForm()) {
+            // Scroll to first error
+            const firstError = document.querySelector('.error-msg:not(:empty)');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
+
+        // If valid, simulate submission (Since this is frontend only, we generate the receipt dynamically)
+        showReceipt();
+    });
+
+    // Function to generate and show the receipt dynamically
+    function showReceipt() {
+        const selectedServices = getSelectedServices();
+        const servicesList = selectedServices.map(s => s.dataset.name);
+        
+        // Populate Receipt
+        document.getElementById('receiptName').textContent = nameInput.value;
+        document.getElementById('receiptReg').textContent = regInput.value;
+        document.getElementById('receiptType').textContent = document.getElementById('vehicleType').value || 'Not Specified';
+        
+        // Format Date
+        const dateObj = new Date(dateInput.value);
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('receiptDate').textContent = dateObj.toLocaleDateString('en-GB', options);
+
+        // Populate Services List
+        const ul = document.getElementById('receiptServicesList');
+        ul.innerHTML = ''; // Clear previous
+        servicesList.forEach(service => {
+            const li = document.createElement('li');
+            li.textContent = service;
+            ul.appendChild(li);
+        });
+
+        // Add individualisation note to receipt if applicable
+        const noteText = noteP.textContent;
+        if (noteText) {
+             const li = document.createElement('li');
+             li.textContent = `* ${noteText}`;
+             li.style.fontStyle = "italic";
+             li.style.color = "#e67e22";
+             ul.appendChild(li);
+        }
+
+        document.getElementById('receiptTotal').textContent = totalCostSpan.textContent;
+
+        // Hide form, Show receipt
+        document.getElementById('booking-section').classList.add('hidden');
+        document.getElementById('receipt-section').classList.remove('hidden');
+        window.scrollTo(0, 0);
+    }
+    
+});
+
+// Global function to reset the app (Task 8: Navigation)
+function resetApp() {
+    document.getElementById('serviceForm').reset();
+    document.getElementById('totalCost').textContent = '0';
+    document.getElementById('individualisationNote').textContent = '';
+    
+    // Clear all error messages manually since form.reset() doesn't trigger JS events
+    document.querySelectorAll('.error-msg').forEach(el => el.textContent = '');
+    
+    document.getElementById('receipt-section').classList.add('hidden');
+    document.getElementById('booking-section').classList.remove('hidden');
+    
+    // Recalculate (to ensure everything is 0)
+    // Note: calculateServiceCost is inside the DOMContentLoaded scope, 
+    // so we just manually trigger a change event on a checkbox or rely on the reset to clear UI.
+    // For safety, let's manually reset the display values again.
+    document.getElementById('totalCost').textContent = '0';
+}
